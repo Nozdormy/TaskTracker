@@ -1,6 +1,7 @@
 package com.example.dto;
 
 import com.example.model.TaskStatus;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class TaskDTO {
+
     private Long id;
 
     @NotBlank(message = "The task name cannot be empty.")
@@ -25,5 +27,6 @@ public class TaskDTO {
     private TaskStatus status;
 
     @NotNull(message = "Specify a deadline")
+    @FutureOrPresent(message = "Deadline cannot be in the past")
     private LocalDate deadline;
 }

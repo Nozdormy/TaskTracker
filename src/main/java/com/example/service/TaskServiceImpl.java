@@ -27,12 +27,9 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task editTask(Task task) {
-        Optional<Task> existing = repository.findById(task.getId());
-        if (existing.isEmpty()) {
-            throw new TaskNotFoundException(task.getId());
-        }
+        Task updated = repository.findById(task.getId())
+                .orElseThrow(() -> new TaskNotFoundException(task.getId()));
 
-        Task updated = existing.get();
         updated.setName(task.getName());
         updated.setDescription(task.getDescription());
         updated.setStatus(task.getStatus());
@@ -42,32 +39,40 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Task> filterTasksByStatus(TaskStatus status) {
-        return repository.findByStatus(status);
+        return repository.findAllByStatus(status);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Task> sortTasksByDeadline() {
         return repository.findAllByOrderByDeadlineAsc();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Task> sortTasksByStatus() {
         return repository.findAllByOrderByStatusAsc();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Task> findTaskById(long id) {
         return repository.findById(id);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Task> getAllTasks() {
         return repository.findAll();
     }
 
     @Override
     public void deleteTask(Long id) {
+        if (!repository.existsById(id)) {
+            throw new TaskNotFoundException(id);
+        }
         repository.deleteById(id);
     }
 }

@@ -8,6 +8,7 @@ import com.example.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,7 @@ public class TaskControllerImpl implements TaskController {
         Task task = convertToEntity(taskDTO);
         Task savedTask = taskService.addTask(task);
 
-        return ResponseEntity.ok(convertToDTO(savedTask));
+        return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(savedTask));
     }
 
     @Override
@@ -39,8 +40,7 @@ public class TaskControllerImpl implements TaskController {
     @Override
     @GetMapping("/{id}")
     public ResponseEntity<TaskDTO> getTaskById(@PathVariable Long id) {
-        Task task = taskService.findTaskById(id)
-                .orElseThrow(() -> new TaskNotFoundException(id));
+        Task task = getTaskOrThrow(id);
 
         return ResponseEntity.ok(convertToDTO(task));
     }
@@ -58,8 +58,7 @@ public class TaskControllerImpl implements TaskController {
     @Override
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
-        taskService.findTaskById(id)
-                .orElseThrow(() -> new TaskNotFoundException(id));
+        getTaskOrThrow(id);
         taskService.deleteTask(id);
 
         return ResponseEntity.noContent().build();
@@ -81,6 +80,11 @@ public class TaskControllerImpl implements TaskController {
     @GetMapping("/sort/status")
     public ResponseEntity<List<TaskDTO>> sortTasksByStatus() {
         return ResponseEntity.ok(mapTasksToDTO(taskService.sortTasksByStatus()));
+    }
+
+    private Task getTaskOrThrow(Long id) {
+        return taskService.findTaskById(id)
+                .orElseThrow(() -> new TaskNotFoundException(id));
     }
 
     private TaskDTO convertToDTO(Task task) {
